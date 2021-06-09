@@ -1,0 +1,123 @@
+\documentclass[tikz]{standalone}
+\usepackage{ifthen}
+\usetikzlibrary{matrix,calc}
+\usepackage{pgfplots}
+
+\definecolor{seabornBlue}{RGB}{76,114,176}
+\definecolor{seabornRed}{RGB}{196,78,82}
+\definecolor{blueBelizeHole}{RGB}{41,128,185}
+\definecolor{asparagus}{rgb}{0.53, 0.66, 0.42}
+\definecolor{blue-violet}{rgb}{0.54, 0.17, 0.89}
+\definecolor{brightturquoise}{rgb}{0.03, 0.91, 0.87}
+\definecolor{calpolypomonagreen}{rgb}{0.12, 0.3, 0.17}
+
+\pgfkeys{/pgf/number format/.cd, fixed, fixed zerofill, precision=2}
+
+\usepackage{xfp}
+\usepgflibrary{fpu}
+
+\newcommand*{\Scale}[2][4]{\scalebox{#1}{$#2$}}%
+
+
+\begin{document}
+
+% maximum value is 16384, if greater, this won't work beause of the floating point number.  
+
+%The matrix in numbers
+%Horizontal target class
+%Vertical output class
+
+\def\myConfMat{{
+{42856,24,21,7,6,0,2,0,42916},
+{22,1513,16,0,0,0,0,0,1551},
+{36,15,2556,0,0,0,0,0,2607},
+{10,0,0,1570,0,0,0,0,1580},
+{8,0,0,2,4072,0,0,0,4082},
+{0,0,0,0,0,980,0,0,980},
+{21,0,0,0,0,0,414,0,435},
+{10,0,0,0,0,6,0,759,775},
+{42963,1552,2593,1579,4078,986,416,759,54720},
+}
+}
+
+
+\def\myNormConfMat{{
+{78.02,0.04,0.04,0.01,0.01,0.0,0.0,0.0,99.86},
+{0.04,2.75,0.03,0.0,0.0,0.0,0.0,0.0,97.55},
+{0.07,0.03,4.65,0.0,0.0,0.0,0.0,0.0,98.04},
+{0.02,0.0,0.0,2.86,0.0,0.0,0.0,0.0,99.37},
+{0.01,0.0,0.0,0.0,7.41,0.0,0.0,0.0,99.76},
+{0.0,0.0,0.0,0.0,0.0,1.78,0.0,0.0,100.0},
+{0.04,0.0,0.0,0.0,0.0,0.0,0.75,0.0,95.17},
+{0.02,0.0,0.0,0.0,0.0,0.01,0.0,1.38,97.94},
+{99.75,97.49,98.57,99.43,99.85,99.39,99.52,100.0,99.62},
+}}
+
+%\def\classNames{{"A","B","C","D","E","F", "G", "H"}} %class names. Adapt at will
+
+\def\numClasses{9} %number of classes. Could be automatic, but you can change it for tests.
+
+%
+\def\classNamesC{{"Normal(0)", "NMRI(1)", "CMRI(2)", "MSCI(3)", "MPCI(4)", "MFCI(5)", "DoS(6)", "Recon(7)", "Sum cols"}} %class names. Adapt at will
+\def\classNamesR{{"Normal(0)", "NMRI(1)", "CMRI(2)", "MSCI(3)", "MPCI(4)", "MFCI(5)", "DoS(6)", "Recon(7)", "Sum Rows"}} %class names. Adapt at will
+%
+%\def\numClasses{8} %number of classes. Could be automatic, but you can change it for tests.
+
+\def\myScale{1.5} % 1.5 is a good scale. Values under 1 may need smaller fonts!
+\begin{tikzpicture}[
+    scale = \myScale,
+    %font={\scriptsize}, %for smaller scales, even \tiny may be useful
+    ]
+
+\tikzset{vertical label/.style={rotate=90,anchor=east}}   % usable styles for below
+\tikzset{diagonal label/.style={rotate=45,anchor=north east}}
+
+
+\foreach \y in {1,...,\numClasses} %loop vertical starting on top
+{
+    % Add class name on the left
+
+    \node [anchor=east, rotate=40] at (0.4,-\y) {\scalebox{0.6}[0.6]{\pgfmathparse{\classNamesC[\y-1]}\pgfmathresult}}; 
+
+    \foreach \x in {1,...,\numClasses}  %loop horizontal starting on left
+    {
+    \begin{scope}[shift={(\x,-\y)}]
+    	\pgfkeys{/pgf/fpu=true}
+        \def\mVal{\myConfMat[\y-1][\x-1]} % The value at index y,x (-1 because of zero indexing)
+        \pgfkeys{/pgf/fpu=false}
+        \def\nVal{\myNormConfMat[\y-1][\x-1]} 
+
+        \pgfmathtruncatemacro{\r}{\mVal}   %
+        %% this macro to compare to 50 otherwise it won't work
+        \pgfmathtruncatemacro{\p}{\nVal}   %
+        
+        %% for floating point return from macro: use \pgfmathsetmacro
+	    \pgfmathsetmacro{\q}{\nVal}
+
+        \coordinate (C) at (0,0);
+        \ifthenelse{\p<50}{\def\txtcol{black}}{\def\txtcol{white}} %decide text color for contrast
+        \node[
+            draw,                 %draw lines
+            text=\txtcol,         %text color (automatic for better contrast)
+            align=center,         %align text inside cells (also for wrapping)
+            fill=calpolypomonagreen!\p,        %intensity of fill (can change base color)
+            minimum size=\myScale*10mm,    %cell size to fit the scale and integer dimensions (in cm)
+            inner sep=0,          %remove all inner gaps to save space in small scales
+            ] (C){\r\\\scalebox{0.85}[0.85]{\pgfmathprintnumber{\q}}\%};     %text to put in cell (adapt at will)
+        %Now if last vertical class add its label at the bottom
+
+        \ifthenelse{\y=\numClasses}{
+        \node [rotate = 25] at ($(C)-(0,0.75)$) % can use vertical or diagonal label as option
+        {\scalebox{0.6}[0.6]{\pgfmathparse{\classNamesR[\x-1]}\pgfmathresult}};}{}
+    \end{scope}
+    }
+}
+%Now add x and y labels on suitable coordinates
+\coordinate (yaxis) at (-0.3,0.5-\numClasses/2);  %must adapt if class labels are wider!
+\coordinate (xaxis) at (0.5+\numClasses/2, -\numClasses-1.25); %id. for non horizontal labels!
+\node [vertical label] at (yaxis) {True label};
+\node []               at (xaxis) {Predicted label};
+\end{tikzpicture}
+
+\end{document}
+
