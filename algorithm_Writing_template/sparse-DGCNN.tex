@@ -1,0 +1,106 @@
+\documentclass{article}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage[utf8]{vietnam}
+\usepackage[a4paper, margin=6cm]{geometry}
+\usepackage{etoolbox}
+\usepackage{lipsum}
+
+\usepackage{hanging}
+
+\makeatletter
+% start with some helper code
+% This is the vertical rule that is inserted
+\newcommand*{\algrule}[1][\algorithmicindent]{%
+  \hspace*{.2em}% <------------- This is where the rule starts from
+  \vrule %height .75\baselineskip depth .25\baselineskip
+  \hspace*{\dimexpr#1-.2em-.4pt}%
+}
+
+\newcommand{\StatePar}[1]{%
+  \State\parbox[t]{\dimexpr\linewidth-\ALG@thistlm}{\strut #1\strut}%
+}
+\renewcommand{\ALG@beginalgorithmic}{\offinterlineskip}% Remove all interline skips
+%%========================================================================================================%%
+%% to make a line match the corresponding keywords like for - end for, if - else -end if, ...
+%========================================================================================================%%
+%\newcount\ALG@printindent@tempcnta
+%\def\ALG@printindent{%
+%  \ifnum \theALG@nested > 0% is there anything to print
+%    \ifx\ALG@text\ALG@x@notext% is this an end group without any text?
+%      % do nothing
+%    \else
+%      \unskip
+%      % draw a rule for each indent level
+%      \ALG@printindent@tempcnta=1
+%      \loop
+%        \algrule[\csname ALG@ind@\the\ALG@printindent@tempcnta\endcsname]%
+%        \advance \ALG@printindent@tempcnta 1
+%        \ifnum \ALG@printindent@tempcnta<\numexpr\theALG@nested+1\relax
+%      \repeat
+%        \fi
+%    \fi
+%}
+%% the following line injects our new indent handling code in place of the default spacing
+%\patchcmd{\ALG@doentity}{\noindent\hskip\ALG@tlm}{\ALG@printindent}{}{\errmessage{failed to patch}}
+%% end vertical rule patch for algorithmicx
+%\makeatother
+
+% Add \struts to keywords
+\algrenewcommand\algorithmicend{\strut\textbf{end}}
+\algrenewcommand\algorithmicdo{\strut\textbf{do}}
+\algrenewcommand\algorithmicwhile{\strut\textbf{while}}
+\algrenewcommand\algorithmicfor{\strut\textbf{for}}
+\algrenewcommand\algorithmicforall{\strut\textbf{for all}}
+\algrenewcommand\algorithmicloop{\strut\textbf{loop}}
+\algrenewcommand\algorithmicrepeat{\strut\textbf{Lặp lại}}
+\algrenewcommand\algorithmicuntil{\strut\textbf{Đến khi}}
+\algrenewcommand\algorithmicprocedure{\strut\textbf{procedure}}
+\algrenewcommand\algorithmicfunction{\strut\textbf{function}}
+\algrenewcommand\algorithmicif{\strut\textbf{if}}
+\algrenewcommand\algorithmicthen{\strut\textbf{then}}
+\algrenewcommand\algorithmicelse{\strut\textbf{else}}
+
+\algrenewcommand\algorithmicrequire{\strut\textbf{Đầu vào:}}
+\algrenewcommand\algorithmicensure{\strut\textbf{Đầu ra:}}
+
+
+%% change the keyword "Algorithm" to "Thuật toán"
+\floatname{algorithm}{Thuật Toán}
+
+%\newenvironment{newalgorithm}[1][htb]
+%  {\renewcommand{\algorithmcfname}{Thuật Toán}% Update algorithm name
+%   \begin{algorithm}[#1]%
+%  }{\end{algorithm}}
+  
+\let\oldState\State
+\renewcommand{\State}{\oldState\strut}
+
+\begin{document}
+
+
+\begin{algorithm}
+
+\caption{Quy trình huấn luyện mô hình sparse-DGCNN cho nhận dạng cảm xúc sử dụng tín hiệu EEG}\label{alg:cap}
+\begin{algorithmic}[1]
+\Require Tín hiệu đồ thị $G=\{V,W\}$ biểu diễn đặc trưng EEG đa kênh, learning rate $\tau$ và trọng số ràng buộc thưa $\lambda$;
+\Ensure  Ma trận liền kề $W^{*}$ và trọng số của mô hình $\Theta^{*}$;
+\State Khởi tạo ma trận liền kề $W^{*}$ và các trọng số khác của mô hình $\Theta^{*}$;
+
+
+\Repeat
+
+\StatePar{Tính ma trận Laplacian và đa thức Chebyshev;}
+\StatePar{Tính kết quả của mạng thông qua các lớp tích chập đồ thị, lớp tích chập $1\times1$, hàm kích hoạt Relu và lớp kết nối đầy đủ}
+\StatePar{Tính giá trị hàm mất mát;}
+\StatePar{Cập nhật trọng số của mô hình $\Theta\leftarrow\Theta-\tau{\frac{\partial{\mathcal{L}}}{\partial\Theta}}$;}
+\StatePar{Tính $W^{\frac{1}{2}}=W-\tau\frac{\partial{\mathcal{L}}}{\partial{W}}$;}
+\StatePar{Tính $W=\arg\mathrm{min}_{W}\!_{^{\prime}}\Bigl\{||W^{\prime}-W^{\frac{1}{2}}||_{F}^{2}+\tau\lambda||W^{\prime}||_{1}\Bigr\}$}
+
+\StatePar{Điều chỉnh các phần tử $w_{ij}$ của ma trận W với hàm kích hoạt Relu để đảm bảo $w_{ij}\geq 0$;}
+\Until Thỏa mãn điều kiện hội tụ của thuật toán.
+
+\end{algorithmic}
+\end{algorithm}
+
+\end{document}

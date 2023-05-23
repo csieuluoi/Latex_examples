@@ -1,0 +1,106 @@
+\documentclass{article}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage[utf8]{vietnam}
+\usepackage[a4paper, margin=6cm]{geometry}
+\usepackage{etoolbox}
+\usepackage{lipsum}
+
+\usepackage{hanging}
+
+\makeatletter
+% start with some helper code
+% This is the vertical rule that is inserted
+\newcommand*{\algrule}[1][\algorithmicindent]{%
+  \hspace*{.2em}% <------------- This is where the rule starts from
+  \vrule %height .75\baselineskip depth .25\baselineskip
+  \hspace*{\dimexpr#1-.2em-.4pt}%
+}
+
+\newcommand{\StatePar}[1]{%
+  \State\parbox[t]{\dimexpr\linewidth-\ALG@thistlm}{\strut #1\strut}%
+}
+\renewcommand{\ALG@beginalgorithmic}{\offinterlineskip}% Remove all interline skips
+%%========================================================================================================%%
+%% to make a line match the corresponding keywords like for - end for, if - else -end if, ...
+%========================================================================================================%%
+%\newcount\ALG@printindent@tempcnta
+%\def\ALG@printindent{%
+%  \ifnum \theALG@nested > 0% is there anything to print
+%    \ifx\ALG@text\ALG@x@notext% is this an end group without any text?
+%      % do nothing
+%    \else
+%      \unskip
+%      % draw a rule for each indent level
+%      \ALG@printindent@tempcnta=1
+%      \loop
+%        \algrule[\csname ALG@ind@\the\ALG@printindent@tempcnta\endcsname]%
+%        \advance \ALG@printindent@tempcnta 1
+%        \ifnum \ALG@printindent@tempcnta<\numexpr\theALG@nested+1\relax
+%      \repeat
+%        \fi
+%    \fi
+%}
+%% the following line injects our new indent handling code in place of the default spacing
+%\patchcmd{\ALG@doentity}{\noindent\hskip\ALG@tlm}{\ALG@printindent}{}{\errmessage{failed to patch}}
+%% end vertical rule patch for algorithmicx
+%\makeatother
+
+% Add \struts to keywords
+\algrenewcommand\algorithmicend{\strut\textbf{end}}
+\algrenewcommand\algorithmicdo{\strut\textbf{do}}
+\algrenewcommand\algorithmicwhile{\strut\textbf{while}}
+\algrenewcommand\algorithmicfor{\strut\textbf{for}}
+\algrenewcommand\algorithmicforall{\strut\textbf{for all}}
+\algrenewcommand\algorithmicloop{\strut\textbf{loop}}
+\algrenewcommand\algorithmicrepeat{\strut\textbf{Lặp lại}}
+\algrenewcommand\algorithmicuntil{\strut\textbf{Đến khi}}
+\algrenewcommand\algorithmicprocedure{\strut\textbf{procedure}}
+\algrenewcommand\algorithmicfunction{\strut\textbf{function}}
+\algrenewcommand\algorithmicif{\strut\textbf{if}}
+\algrenewcommand\algorithmicthen{\strut\textbf{then}}
+\algrenewcommand\algorithmicelse{\strut\textbf{else}}
+
+\algrenewcommand\algorithmicrequire{\strut\textbf{Đầu vào:}}
+\algrenewcommand\algorithmicensure{\strut\textbf{Đầu ra:}}
+
+
+%% change the keyword "Algorithm" to "Thuật toán"
+\floatname{algorithm}{Thuật Toán}
+
+%\newenvironment{newalgorithm}[1][htb]
+%  {\renewcommand{\algorithmcfname}{Thuật Toán}% Update algorithm name
+%   \begin{algorithm}[#1]%
+%  }{\end{algorithm}}
+  
+\let\oldState\State
+\renewcommand{\State}{\oldState\strut}
+
+\begin{document}
+
+\begin{algorithm}
+
+\caption{Quy trình huấn luyện mô hình DGCNN cho nhận dạng cảm xúc sử dụng tín hiệu EEG}\label{alg:cap}
+\begin{algorithmic}[1]
+\Require Đặc trưng của tín hiệu EEG đa kênh tương ứng với các dải tần số, nhãn cảm xúc tương ứng với các phân đoạn tín hiệu, bậc của đa thức Chebyshev $K$, learning rate $\rho$;
+\Ensure  Ma trận liền kề $\mathbf{W}^{*}$ và trọng số của mô hình DGCNN;
+\State Khởi tạo ma trận liền kề $\mathbf{W}^{*}$ và các trọng số khác của mô hình;
+
+
+\Repeat
+\StatePar{Điều chỉnh các phần tử của ma trận W với hàm kích hoạt Relu để đảm bảo chúng đều không âm;}
+\StatePar{Tính ma trận Laplacian $\mathbf{L}^{*}$;}
+\StatePar{Tính ma trận Laplacian chuẩn hóa ${\tilde{\bf L}}^{*}$;}
+\StatePar{Tính các phần tử của đa thức Chebyshev $T_{k}({\tilde{\bf L}}^{*})$ $(k=0,1,\cdot\cdot\ ,K-1)$;}
+\StatePar{Tính $\sum_{{k}=0}^{K-1}\theta_{k}T_{k}({\mathbf{\tilde{{L}}}^{*}})\mathbf{x}$;}
+\StatePar{Tính kết quả của lớp tích chập $1\times1$ với hàm kích hoạt Relu;}
+\StatePar{Tính kết quả của lớp lớp kết nối đầy đủ;}
+\StatePar{Tính giá trị hàm mất mát;}
+\StatePar{Cập nhật ma trận liền kề \newline \centerline{${\bf W}^{*}=(1-\rho){\bf W}^{*}+\rho\frac{\partial{\cal L}o s s}{\partial{\bf W}^{*}}$} \newline và các trọng số của mô hình;}
+
+\Until Thỏa mãn điều kiện hội tụ của thuật toán.
+
+\end{algorithmic}
+\end{algorithm}
+
+\end{document}
